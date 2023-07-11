@@ -4,11 +4,13 @@ const display = document.querySelector(".display");
 const equalBtn = document.querySelector("#equal-btn");
 const resetCalculator = document.querySelector("#clear-btn");
 const decimalBtn = document.querySelector("#decimal");
+const signChangeBtn = document.querySelector("#sign-change");
 
 let isOperationSelected = false;
 let currentOperation = "";
 let isOperationComplete= false;
 let numDecimals = 0;
+let operationIndex = 0;
 
 numbers.forEach((number) => {
     number.addEventListener("click", displayNumber);
@@ -20,33 +22,71 @@ operations.forEach((operation) => {
 
 equalBtn.addEventListener("click",calculate);
 decimalBtn.addEventListener("click", displayNumber);
+signChangeBtn.addEventListener("click",changeSign);
 
 resetCalculator.addEventListener("click", () => {
-    display.textContent = "0";
+    display.textContent = "";
     isOperationSelected = false;
     currentOperation = "";
     isOperationComplete = false;
     numDecimals = 0;
 });
 
+function changeSign() {
+    currentText = display.textContent;
+    if(!isOperationSelected) {
+        if (currentText.charAt(0) === "0") {
+            currentText = "-";
+        }
+        else if(currentText.charAt(0) !== "-") {
+            currentText = "-" + currentText;
+        } else {
+            currentText = currentText.slice(1);
+        }
+    } else {
+        rightOperand = currentText.slice(operationIndex + 1);
+        leftOperand = currentText.slice(0, operationIndex + 1);
+        if (rightOperand.charAt(0) === "0") {
+            rightOperand = "-"
+        }
+        else if(rightOperand.charAt(0) !== "-") {
+            rightOperand =  "-" + rightOperand;
+        } else {
+            rightOperand = rightOperand.slice(1);
+        }
+        currentText = leftOperand + rightOperand;
+    }
+    display.textContent = currentText;
+}
+
 function displayOperation(e) {
     if (display.textContent.length < 1) {
         return;
-    } else if (!isOperationSelected) {
+    } else if (!isOperationSelected && display.textContent.length < 13) {
         currentOperation = e.target.textContent;
         display.textContent += e.target.textContent;
+        operationIndex = display.textContent.length - 1;
         isOperationSelected = true;
-        isOperationComplete = false;
+        isOperationComplete = false; 
     }
 }
 
 function displayNumber(e) {
     let currentText = display.textContent;
     let nextDigit = e.target.textContent;
+    if (currentText.charAt(0) === "-" && nextDigit === "0" && currentText.length === 1) {
+        return;
+    }
+    if (currentText.charAt(operationIndex + 1) == "-" && nextDigit === "0") {
+        if (currentText.length - 1 === operationIndex + 1) {
+            return;
+        }
+    } 
+
     if (isOperationSelected) {
-        let operationIndex = currentText.indexOf(currentOperation) + 1;
-        currentOperation === "mod" ? operationIndex += 2 : operationIndex;
-        currentText = cleanCalcDisplay(currentText, nextDigit, operationIndex);
+        let zeroIndex = operationIndex + 1;
+        currentOperation === "mod" ? zeroIndex += 2 : zeroIndex;
+        currentText = cleanCalcDisplay(currentText, nextDigit, zeroIndex);
     } else if (isOperationComplete) {    
         currentText = nextDigit;
         if(currentText === ".") {
@@ -69,7 +109,7 @@ function cleanCalcDisplay(currentText, nextDigit, zeroToReplace) {
     if(currentText.charAt(zeroIndex) === "0") {
         // replace zero if it is a leading digit in the operand and then a new digit is entered
         currentText = currentText.slice(0, currentText.length - 1) + nextDigit;
-    } else if(currentText.length < 15) {
+    } else if(currentText.length < 14) {
         if (currentText === "Error") {
             currentText = nextDigit;
         } else {
@@ -135,8 +175,9 @@ function modulo(x, y) {
 
 function calculate() { 
     if (!isOperationSelected) return;
-
-    let parts = display.textContent.split(currentOperation);
+    let currentText = display.textContent;
+    if (currentText.length === operationIndex + 1) return;
+    let parts = currentText.split(currentOperation);
     let leftOperand = parts[0];
     let rightOperand = parts[1];
     if (leftOperand === ".") {
