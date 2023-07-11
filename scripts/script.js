@@ -52,6 +52,12 @@ window.addEventListener("keydown", (e) => {
         calculate();
     } else if (pressedKey === "`") {
         changeSign();
+    } else if (pressedKey === "c") {
+        display.textContent = "";
+        isOperationSelected = false;
+        currentOperation = "";
+        isOperationComplete = false;
+        numDecimals = 0;
     }
     
 });
