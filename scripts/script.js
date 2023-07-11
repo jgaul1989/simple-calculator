@@ -53,22 +53,20 @@ window.addEventListener("keydown", (e) => {
     } else if (pressedKey === "`") {
         changeSign();
     } else if (pressedKey === "c") {
-        display.textContent = "";
-        isOperationSelected = false;
-        currentOperation = "";
-        isOperationComplete = false;
-        numDecimals = 0;
+        clearDisplay();
     }
     
 });
 
-resetCalculator.addEventListener("click", () => {
+resetCalculator.addEventListener("click", clearDisplay);
+
+function clearDisplay() {
     display.textContent = "";
     isOperationSelected = false;
     currentOperation = "";
     isOperationComplete = false;
     numDecimals = 0;
-});
+}
 
 function removePrevious() {
     currentText = display.textContent;
