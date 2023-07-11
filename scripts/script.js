@@ -1,4 +1,4 @@
-const numbers = document.querySelectorAll(".numeric-btn");
+const numberBtn = document.querySelectorAll(".numeric-btn");
 const operations = document.querySelectorAll(".operation");
 const display = document.querySelector(".display");
 const equalBtn = document.querySelector("#equal-btn");
@@ -6,6 +6,9 @@ const resetCalculator = document.querySelector("#clear-btn");
 const decimalBtn = document.querySelector("#decimal");
 const signChangeBtn = document.querySelector("#sign-change");
 const deleteBtn = document.querySelector("#del");
+const validDisplayKeys = ["1" , "2", "3", "4", "5", "6",
+ "7", "8", "9", "0", "."];
+ const validOperations = ["+", "-", "*", "/", "%"];
 
 let isOperationSelected = false;
 let currentOperation = "";
@@ -13,18 +16,45 @@ let isOperationComplete= false;
 let numDecimals = 0;
 let operationIndex = 0;
 
-numbers.forEach((number) => {
-    number.addEventListener("click", displayNumber);
+numberBtn.forEach((number) => {
+    number.addEventListener("click", (e) => {
+        pressedKey = e.target.textContent;
+        displayNumber(pressedKey);
+    });
 });
 
 operations.forEach((operation) => {
-    operation.addEventListener("click", displayOperation);
+    operation.addEventListener("click", (e) => {
+        pressedKey = e.target.textContent;
+        displayOperation(pressedKey);
+    });
 });
 
 equalBtn.addEventListener("click",calculate);
-decimalBtn.addEventListener("click", displayNumber);
+
+decimalBtn.addEventListener("click", (e) => {
+    pressedKey = e.target.textContent;
+    displayNumber(pressedKey);
+});
+
 signChangeBtn.addEventListener("click",changeSign);
 deleteBtn.addEventListener("click", removePrevious);
+
+window.addEventListener("keydown", (e) => {
+    pressedKey = e.key;
+    if (validDisplayKeys.includes(pressedKey)) {
+        displayNumber(pressedKey);
+    } else if (validOperations.includes(pressedKey)) {
+        displayOperation(pressedKey);
+    } else if (pressedKey === "Backspace") {
+        removePrevious();
+    } else if (pressedKey === "=") {
+        calculate();
+    } else if (pressedKey === "`") {
+        changeSign();
+    }
+    
+});
 
 resetCalculator.addEventListener("click", () => {
     display.textContent = "";
@@ -39,6 +69,10 @@ function removePrevious() {
     if (isOperationSelected && currentText.length - 1 === operationIndex) {
         operationIndex = 0;
         isOperationSelected = false;
+    }
+    let removedChar = currentText.charAt(currentText.length - 1);
+    if (removedChar === ".") {
+        numDecimals -= 1;
     }
     currentText = currentText.slice(0,currentText.length - 1);
     display.textContent = currentText;
@@ -71,21 +105,23 @@ function changeSign() {
     display.textContent = currentText;
 }
 
-function displayOperation(e) {
+function displayOperation(pressedKey) {
+    if(pressedKey === "mod") {
+        pressedKey = "%";
+    }
     if (display.textContent.length < 1) {
         return;
     } else if (!isOperationSelected && display.textContent.length < 13) {
-        currentOperation = e.target.textContent;
-        display.textContent += e.target.textContent;
+        currentOperation = pressedKey;
+        display.textContent += pressedKey;
         operationIndex = display.textContent.length - 1;
         isOperationSelected = true;
         isOperationComplete = false; 
     }
 }
 
-function displayNumber(e) {
+function displayNumber(nextDigit) {
     let currentText = display.textContent;
-    let nextDigit = e.target.textContent;
     if (currentText.charAt(0) === "-" && nextDigit === "0" && currentText.length === 1) {
         return;
     }
@@ -213,7 +249,7 @@ function calculate() {
         case "/":
             display.textContent = divide(leftOperand, rightOperand);
             break;
-        case "mod":
+        case "%":
             display.textContent = modulo(leftOperand, rightOperand);
             break;
     }
