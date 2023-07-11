@@ -5,6 +5,7 @@ const equalBtn = document.querySelector("#equal-btn");
 const resetCalculator = document.querySelector("#clear-btn");
 const decimalBtn = document.querySelector("#decimal");
 const signChangeBtn = document.querySelector("#sign-change");
+const deleteBtn = document.querySelector("#del");
 
 let isOperationSelected = false;
 let currentOperation = "";
@@ -23,6 +24,7 @@ operations.forEach((operation) => {
 equalBtn.addEventListener("click",calculate);
 decimalBtn.addEventListener("click", displayNumber);
 signChangeBtn.addEventListener("click",changeSign);
+deleteBtn.addEventListener("click", removePrevious);
 
 resetCalculator.addEventListener("click", () => {
     display.textContent = "";
@@ -31,6 +33,16 @@ resetCalculator.addEventListener("click", () => {
     isOperationComplete = false;
     numDecimals = 0;
 });
+
+function removePrevious() {
+    currentText = display.textContent;
+    if (isOperationSelected && currentText.length - 1 === operationIndex) {
+        operationIndex = 0;
+        isOperationSelected = false;
+    }
+    currentText = currentText.slice(0,currentText.length - 1);
+    display.textContent = currentText;
+}
 
 function changeSign() {
     currentText = display.textContent;
@@ -180,6 +192,7 @@ function calculate() {
     let parts = currentText.split(currentOperation);
     let leftOperand = parts[0];
     let rightOperand = parts[1];
+    if (rightOperand === "-") return;
     if (leftOperand === ".") {
         leftOperand = "0";
     }
